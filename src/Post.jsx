@@ -1,59 +1,93 @@
-// Post.jsx (unchanged)
-import React, { useState } from 'react';
-import { FaHeart, FaComment } from 'react-icons/fa';
+import React, { useState, useEffect } from "react";
+import { FaHeart, FaComment } from "react-icons/fa";
 
-const Post = ({ userImage, username, photo, date, tags, comments, onTagClick, onPostClick, onProfileClick }) => {
+const Post = ({ 
+  id, avatar, author, download_url, birthDate, reactions = [], 
+  onCategoryClick, onPostClick, onUserClick 
+}) => {
+  
   const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
+  const [likeCount, setLikeCount] = useState(Math.floor(Math.random() * 100));
+
+  useEffect(() => {
+    setLikeCount(likeCount);
+  }, [likeCount]);
 
   const handleLike = () => {
     setLiked(!liked);
-    setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+    setLikeCount(prev => (liked ? prev - 1 : prev + 1));
   };
 
   return (
-    <div className="post" onClick={() => onPostClick()}>
-      <div className="user-info" style={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onProfileClick(); }}>
-        <img style={{ width: '50px' }} src={userImage} alt={username} />
-        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-          <span>{username}</span>
-          <span>{date}</span>
+    <div className="bg-gray-900 text-white p-5 rounded-lg shadow-lg mb-6 max-w-[500px] mx-auto">
+      {/* User Info */}
+      <div 
+        className="flex items-center space-x-3 cursor-pointer" 
+        onClick={() => onUserClick(id, author)}
+      >
+        <img 
+          className="w-12 h-12 rounded-full object-cover border border-gray-500" 
+          src={avatar} alt={author} 
+        />
+        <div>
+          <p className="font-semibold">{author}</p>
+          <p className="text-gray-400 text-sm">Born: {birthDate}</p>
         </div>
       </div>
-      <img src={photo} alt="Post" />
-      <div className="post-actions">
-        <button onClick={(e) => { e.stopPropagation(); handleLike(); }}>
-          <FaHeart color={liked ? 'red' : 'black'} />
+
+      {/* Post Image */}
+      <div 
+        className="mt-4 cursor-pointer relative group w-full h-[250px] overflow-hidden rounded-md"
+        onClick={() => onPostClick(id)}
+      >
+        <img 
+          className="w-full h-full object-cover rounded-md transition transform group-hover:scale-105 duration-300" 
+          src={download_url} alt="Post" 
+        />
+      </div>
+
+      {/* Post Actions */}
+      <div className="flex items-center justify-between mt-4">
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleLike();
+          }} 
+          className="flex items-center space-x-2 text-gray-400 hover:text-red-500 transition"
+        >
+          <FaHeart className={`${liked ? "text-red-500" : ""}`} />
           <span>{likeCount}</span>
         </button>
-        <FaComment />
+        <FaComment className="text-gray-400 hover:text-blue-400 transition cursor-pointer" />
       </div>
-      <div className="post-details">
-        <div className="tags">
-          {tags.map((tag, index) => (
-            <span key={index} onClick={(e) => { e.stopPropagation(); onTagClick(tag); }} style={{ cursor: 'pointer', color: 'blue' }}>
-              #{tag}
-            </span>
-          ))}
-        </div>
-        <div className="comments">
-          {comments.map((comment, index) => (
-            <div key={index} style={{ display: 'flex', alignItems: 'center', margin: '5px 0' }}>
-              <img 
-                src={comment.userImage} 
-                alt={comment.username} 
-                style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }} 
-              />
-              <span 
-                style={{ color: 'blue', cursor: 'pointer', marginRight: '5px' }} 
-                onClick={(e) => { e.stopPropagation(); onProfileClick(comment.userId, comment.username); }}
-              >
-                {comment.username}
-              </span>
-              {comment.text}
+
+      {/* Categories (Tags) */}
+      <div className="mt-4">
+        {reactions.map((reaction, index) => (
+          <span 
+            key={index} 
+            className="text-yellow-400 cursor-pointer hover:text-yellow-300 mr-2"
+            onClick={() => onCategoryClick(reaction.message)}
+          >
+            #{reaction.message}
+          </span>
+        ))}
+      </div>
+
+      {/* Comments */}
+      <div className="mt-4 border-t border-gray-600 pt-3">
+        {reactions.map((reaction, index) => (
+          <div key={index} className="flex items-center space-x-3 mb-2">
+            <img 
+              className="w-8 h-8 rounded-full object-cover border border-gray-400" 
+              src={reaction.avatar} alt={reaction.handle} 
+            />
+            <div>
+              <p className="text-sm font-semibold">{reaction.handle}</p>
+              <p className="text-gray-400 text-xs">{reaction.message}</p>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   );
